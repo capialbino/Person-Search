@@ -1,0 +1,19 @@
+{
+  "data_root": "data/PRW",
+  "out_dir": "checkpoints/color_jitter",
+  "backbone": "resnet101",
+  "reid_loss": "oim",
+  "epochs": 16,
+  "batch_size": 2,
+  "lr": 0.0015,
+  "lr_milestones": [
+    10,
+    14
+  ],
+  "workers": 4,
+  "seed": 42,
+  "resume": null,
+  "eval_at_end": true,
+  "random_erasing": false,
+  "color_jitter": true
+}

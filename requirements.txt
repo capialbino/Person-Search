@@ -1,0 +1,15 @@
+# ── To run the notebook (view results, no GPU needed) ─────────────────────
+matplotlib>=3.9.0
+Pillow>=10.0.0
+numpy>=1.26.0
+pandas>=2.2.0
+jupyter>=1.1.0
+ipykernel>=6.29.0
+
+# ── Optional: needed only for the model-loading / inference section ────────
+# Install the wheel matching your CUDA version from https://pytorch.org
+# e.g. for CUDA 12.8: pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128
+# torch>=2.5.0
+# torchvision>=0.20.0
+# scipy>=1.13.0
+# transformers>=4.40.0   # DINOv2 backbone (Ablation 1) only

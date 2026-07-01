@@ -100,6 +100,32 @@ def extract_queries(model, loader, device):
     return feats
 
 
+def evaluate_reranked(model, gallery_loader, query_loader, device, *,
+                      det_thresh=0.5, k1=20, k2=6, lam=0.3):
+    """Person search evaluation with k-reciprocal re-ranking at image level.
+
+    Gallery features are kept as raw L2-normalised embeddings (no CWS) for the
+    re-ranking step; the detection score is used only when aggregating per-image
+    representative features inside ``eval_search_prw_reranked``.
+    """
+    from src.reranking import eval_search_prw_reranked
+
+    gallery_dets, gallery_feats = extract_gallery(model, gallery_loader, device)
+    query_feats = extract_queries(model, query_loader, device)
+
+    return eval_search_prw_reranked(
+        gallery_loader.dataset,
+        query_loader.dataset,
+        gallery_dets,
+        gallery_feats,
+        query_feats,
+        det_thresh=det_thresh,
+        k1=k1,
+        k2=k2,
+        lam=lam,
+    )
+
+
 def evaluate(model, gallery_loader, query_loader, device, *,
              det_thresh=0.5, use_cws=True):
     """Full person search evaluation with the official PRW protocol.

@@ -38,9 +38,13 @@ def train_one_epoch(model, loader, optimizer, scaler, device, epoch, *,
             loss = sum(loss_dict.values())
 
         if not math.isfinite(loss.item()):
-            print(f"Loss is {loss.item()}, stopping training", file=sys.stderr)
+            print(f"WARNING: NaN/inf loss at epoch {epoch} iter {it}, skipping batch", file=sys.stderr)
             print(loss_dict, file=sys.stderr)
-            sys.exit(1)
+            optimizer.zero_grad(set_to_none=True)
+            scaler.update()
+            if warmup is not None:
+                warmup.step()
+            continue
 
         optimizer.zero_grad(set_to_none=True)
         scaler.scale(loss).backward()

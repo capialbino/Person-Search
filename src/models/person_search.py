@@ -66,9 +66,10 @@ class PersonSearchRoIHeads(RoIHeads):
         }
         # BatchNorm in the re-ID head needs at least 2 samples in training mode.
         if fg_mask.sum() >= 2:
-            embeddings = self.reid_head(box_features[fg_mask])
-            # memories in the OIM loss are fp32: keep the loss out of autocast fp16
-            losses["loss_reid"] = self.reid_loss(embeddings.float(), pids[fg_mask])
+            # Force fp32: BN + FC can overflow in fp16, producing NaN embeddings.
+            with torch.amp.autocast("cuda", enabled=False):
+                embeddings = self.reid_head(box_features[fg_mask].float())
+            losses["loss_reid"] = self.reid_loss(embeddings, pids[fg_mask])
         else:
             losses["loss_reid"] = class_logits.sum() * 0.0
         return [], losses

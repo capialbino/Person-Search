@@ -87,6 +87,11 @@ class OIMLoss(nn.Module):
         logits = _OIMFunction.apply(
             embeddings, pids, self.lut, self.cq, self.cq_head, self.momentum
         )
+        # When all proposals are unlabeled (pids all -1), cross_entropy with
+        # ignore_index=-1 returns NaN (0/0) in PyTorch ≥2.x. Return a
+        # differentiable zero instead so the CQ is still updated via backward.
+        if not (pids >= 0).any():
+            return (logits * 0).sum()
         # Unlabeled persons still contribute as negatives (their features enter
         # the queue) but are excluded from the cross-entropy via ignore_index.
         return F.cross_entropy(logits * self.scalar, pids, ignore_index=-1)

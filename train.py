@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 from src.datasets.prw import PRWDataset, collate_fn
 from src.datasets.transforms import build_transforms
 from src.engine import evaluate, train_one_epoch
-from src.utils import save_checkpoint, set_seed
+from src.utils import load_checkpoint, save_checkpoint, set_seed
 
 
 def build_model(args, num_pids: int):
@@ -49,7 +49,10 @@ def main():
     parser.add_argument("--lr-milestones", type=int, nargs="+", default=[10, 14])
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--resume", default=None, help="path to checkpoint to resume from")
     parser.add_argument("--eval-at-end", action="store_true", help="run test eval after training")
+    parser.add_argument("--random-erasing", action="store_true", help="add Random Erasing augmentation")
+    parser.add_argument("--color-jitter", action="store_true", help="add Color Jitter augmentation")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -58,7 +61,7 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "args.json").write_text(json.dumps(vars(args), indent=2))
 
-    train_set = PRWDataset(args.data_root, "train", transforms=build_transforms(is_train=True))
+    train_set = PRWDataset(args.data_root, "train", transforms=build_transforms(is_train=True, random_erasing=args.random_erasing, color_jitter=args.color_jitter))
     train_loader = DataLoader(
         train_set,
         batch_size=args.batch_size,
@@ -71,8 +74,20 @@ def main():
     print(f"train: {len(train_set)} images, {train_set.num_pids} identities")
 
     model = build_model(args, num_pids=train_set.num_pids).to(device)
+
+    if args.backbone == "dinov2":
+        # ViT backbone params get a 10× lower LR to avoid destroying pretrained features.
+        vit_params = [p for n, p in model.named_parameters() if p.requires_grad and "backbone.vit" in n]
+        head_params = [p for n, p in model.named_parameters() if p.requires_grad and "backbone.vit" not in n]
+        param_groups = [
+            {"params": vit_params, "lr": args.lr * 0.1},
+            {"params": head_params, "lr": args.lr},
+        ]
+    else:
+        param_groups = [p for p in model.parameters() if p.requires_grad]
+
     optimizer = torch.optim.SGD(
-        [p for p in model.parameters() if p.requires_grad],
+        param_groups,
         lr=args.lr,
         momentum=0.9,
         weight_decay=5e-4,
@@ -82,8 +97,16 @@ def main():
     )
     scaler = torch.amp.GradScaler("cuda")
 
+    start_epoch = 0
     history = []
-    for epoch in range(args.epochs):
+    if args.resume:
+        start_epoch = load_checkpoint(args.resume, model, optimizer, lr_scheduler, device=device) + 1
+        history_path = Path(args.resume).parent / "history.json"
+        if history_path.exists():
+            history = json.loads(history_path.read_text())
+        print(f"Resumed from {args.resume}, starting at epoch {start_epoch}")
+
+    for epoch in range(start_epoch, args.epochs):
         start = time.time()
         losses = train_one_epoch(model, train_loader, optimizer, scaler, device, epoch)
         lr_scheduler.step()

@@ -2,6 +2,7 @@
 
 **Student:** Alessandro Capialbi — 0001191564 — alessandro.capialbi@studio.unibo.it  
 **Course:** Machine Learning for Computer Vision, University of Bologna, A.Y. 2025–2026
+
 **Repository Github:** https://github.com/capialbino/Person-Search
 
 ---

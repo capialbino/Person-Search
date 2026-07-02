@@ -9,7 +9,7 @@
 
 ```
 ml4cv-exam-project/
-├── main.ipynb                 # Submission notebook (run this)
+├── main.ipynb                 # Submission notebook 
 ├── train.py                   # Training entry point (CLI)
 ├── visualize.py               # Qualitative visualization script
 ├── eval_function.py           # Official PRW evaluation protocol (provided)
@@ -46,32 +46,19 @@ ml4cv-exam-project/
 
 ### Requirements
 
-Run locally on a CUDA-capable GPU. Install dependencies:
+Run locally. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
-
-> **PyTorch note:** The project was developed with `torch 2.11.0+cu128` / `torchvision 0.26.0+cu128` on an RTX PRO 2000 Blackwell (sm_120). For other CUDA versions install the matching wheel from [pytorch.org](https://pytorch.org/get-started/locally/).
-
-### Dataset
-
-Download PRW from Kaggle:
-```bash
-kaggle datasets download edoardomerli/prw-person-re-identification-in-the-wild
-unzip prw-person-re-identification-in-the-wild.zip -d data/PRW
-```
-
 ### Model Weights
-
-All checkpoint files are > 400 MB and therefore exceed Virtuale's 20 MB per-file limit. Download them from OneDrive and place them in the paths shown below:
 
 | Experiment | File path | OneDrive link |
 |---|---|---|
-| Baseline | `checkpoints/baseline/last.pt` | *(add link before submission)* |
-| Ablation 1 — DINOv2 | `checkpoints/dinov2_fair/last.pt` | *(add link before submission)* |
-| Ablation 2 — Circle Loss | `checkpoints/circle/last.pt` | *(add link before submission)* |
-| Ablation 3 — Color Jitter | `checkpoints/color_jitter/last.pt` | *(add link before submission)* |
+| Baseline | `checkpoints/baseline/last.pt` | *https://liveunibo-my.sharepoint.com/:f:/g/personal/alessandro_capialbi_studio_unibo_it/IgCO5zjXFBHNQ4q4Wn2BnRNCAbPNzyEUb3-lP5KexubRKJ8?e=2BdU8R* |
+| Ablation 1 — DINOv2 | `checkpoints/dinov2_fair/last.pt` | *https://liveunibo-my.sharepoint.com/:f:/g/personal/alessandro_capialbi_studio_unibo_it/IgCqfwVMTIUHS4491Xn12hYKAcbrnp0p3k6qZ6b2LEQK00o?e=bw5Wa9* |
+| Ablation 2 — Circle Loss | `checkpoints/circle/last.pt` | *https://liveunibo-my.sharepoint.com/:f:/g/personal/alessandro_capialbi_studio_unibo_it/IgDj5xyUVJohTK6Q7pFuEF4jAYtRTK9kajJk69ZGfm9L6DA?e=dpnYTe* |
+| Ablation 3 — Color Jitter | `checkpoints/color_jitter/last.pt` | *https://liveunibo-my.sharepoint.com/:f:/g/personal/alessandro_capialbi_studio_unibo_it/IgC8Rd_va4IQSoM6L_mjF3e8ATdaGDUulh9Va0SmM9mIi5w?e=zJmuf4* |
 
 ### Running the Notebook
 
@@ -79,25 +66,7 @@ All checkpoint files are > 400 MB and therefore exceed Virtuale's 20 MB per-file
 jupyter notebook main.ipynb
 ```
 
-Open `main.ipynb` and **run all cells**. Training is disabled; the notebook loads pre-trained weights and displays pre-computed qualitative results from `vis/baseline/`. The optional evaluation cell (clearly commented out) re-runs the full gallery extraction (~25 min).
-
-### Re-training from Scratch
-
-```bash
-# Baseline
-python train.py --out-dir checkpoints/baseline --eval-at-end
-
-# Ablation 1 — DINOv2 backbone (requires TRANSFORMERS_OFFLINE=1 if no internet)
-python train.py --backbone dinov2 --out-dir checkpoints/dinov2_fair --eval-at-end
-
-# Ablation 2 — Circle Loss
-python train.py --reid-loss circle --out-dir checkpoints/circle --eval-at-end
-
-# Ablation 3 — Color Jitter augmentation
-python train.py --color-jitter --out-dir checkpoints/color_jitter --eval-at-end
-```
-
-Each run takes ~13 h on an RTX PRO 2000 8 GB.
+Open `main.ipynb` and **run all cells**. Training is disabled; the notebook loads pre-trained weights and displays pre-computed qualitative results from `vis/baseline/`.
 
 ---
 

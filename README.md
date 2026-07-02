@@ -37,7 +37,7 @@ ml4cv-exam-project/
 ├── assets/
 │   ├── pipeline_training.png
 │   └── pipeline_inference.png
-└── data/PRW/                  # Dataset (not included — see below)
+└── data/PRW/                  # Dataset 
 ```
 
 ---
